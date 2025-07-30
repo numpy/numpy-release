@@ -239,10 +239,40 @@ jobs:
           print-hash: true
           attestations: true
 
+  check_version:
+    name: Ensure commit is tag before upload to PyPi
+
+    #if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'pypi'
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout numpy
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: numpy/numpy
+          ref: ${{ env.SOURCE_REF_TO_BUILD }}
+          path: numpy-src
+          fetch-depth: 0
+          fetch-tags: true
+          submodules: false
+          persist-credentials: false
+
+      - name: Examine git commit
+        run: |
+          cd numpy-src
+          hash=$(git describe HEAD)
+          echo $hash
+          if [[ $hash == *"-"*"-"* ]]; then
+            echo "SOURCE_REF_TO_BUILD is not a tag"
+            exit 1
+          else
+            echo "SOURCE_REF_TO_BUILD is a tag"
+          fi;
+
   pypi-publish:
     name: Publish release to PyPI
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'pypi'
-    needs: [build_wheels, build_sdist]
+    needs: [check_version]
     runs-on: ubuntu-latest
     environment:
       name: pypi
