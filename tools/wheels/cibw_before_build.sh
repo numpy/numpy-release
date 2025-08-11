@@ -8,7 +8,6 @@ NUMPY_SRC_DIR="${1:-$PWD}/numpy-src"
 echo "" >> $NUMPY_SRC_DIR/LICENSE.txt
 echo "----" >> $NUMPY_SRC_DIR/LICENSE.txt
 echo "" >> $NUMPY_SRC_DIR/LICENSE.txt
-cat $NUMPY_SRC_DIR/LICENSES_bundled.txt >> $NUMPY_SRC_DIR/LICENSE.txt
 if [[ $RUNNER_OS == "Linux" ]] ; then
     cat $PROJECT_DIR/tools/wheels/LICENSE_linux.txt >> $NUMPY_SRC_DIR/LICENSE.txt
 elif [[ $RUNNER_OS == "macOS" ]]; then
