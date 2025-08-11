@@ -242,7 +242,7 @@ jobs:
   check_version:
     name: Ensure commit is tag before upload to PyPi
 
-    #if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'pypi'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'pypi'
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     steps:
