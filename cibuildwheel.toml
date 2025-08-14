@@ -34,3 +34,13 @@ repair-wheel-command = "bash -el ./tools/wheels/repair_windows.sh {wheel} {dest_
 select = ["*-win32"]
 config-settings = {setup-args = ["--vsenv", "-Dallow-noblas=true"], build-dir="build"}
 repair-wheel-command = ""
+
+[tool.cibuildwheel.pyodide]
+before-test = "pip install -r $SRC/requirements/emscripten_test_requirements.txt"
+# Pyodide ensures that the wheels are already repaired by auditwheel-emscripten
+repair-wheel-command = ""
+test-command = "python -m pytest --pyargs numpy -m 'not slow'"
+
+[tool.cibuildwheel.pyodide.config-settings]
+build-dir = "build"
+setup-args = ["--cross-file=$SRC/tools/ci/emscripten/emscripten.meson.cross", "-Dblas=none", "-Dlapack=none"]

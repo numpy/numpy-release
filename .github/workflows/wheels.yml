@@ -78,7 +78,11 @@ jobs:
             python: "cp313t"
           - buildplat: [ macos13, macosx_x86_64, openblas ]
             python: "cp314t"
-
+        include:
+          - buildplat: [ ubuntu-22.04, pyodide_wasm32, "" ]
+            python: "cp312"
+          - buildplat: [ ubuntu-22.04, pyodide_wasm32, "" ]
+            python: "cp313"
     env:
       IS_32_BIT: ${{ matrix.buildplat[1] == 'win32' }}  # used in a cibw_*.sh script
 
@@ -147,7 +151,12 @@ jobs:
       - name: Build wheel
         env:
           CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
+          SRC: ${{ github.workspace }}/numpy-src
         run: |
+          if [[ $CIBW_BUILD == *pyodide_wasm32 ]]; then
+            # specifying CIBW_PLATFORM is required to get the wasm build to work
+            export CIBW_PLATFORM="pyodide"
+          fi
           python -m pip install cibuildwheel==3.1.1
           python -m cibuildwheel numpy-src --config-file cibuildwheel.toml --output-dir ./dist
 
