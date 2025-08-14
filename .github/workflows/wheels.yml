@@ -148,15 +148,16 @@ jobs:
         with:
           python-version: "3.13"
 
+      - name: Pyodide setup
+        if: ${{ matrix.buildplat[1] == 'pyodide_wasm32' }}
+        run: |
+          echo "CIBW_PLATFORM=pyodide" >> "$GITHUB_ENV"
+
       - name: Build wheel
         env:
           CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
           SRC: ${{ github.workspace }}/numpy-src
         run: |
-          if [[ $CIBW_BUILD == *pyodide_wasm32 ]]; then
-            # specifying CIBW_PLATFORM is required to get the wasm build to work
-            export CIBW_PLATFORM="pyodide"
-          fi
           python -m pip install cibuildwheel==3.1.1
           python -m cibuildwheel numpy-src --config-file cibuildwheel.toml --output-dir ./dist
 
