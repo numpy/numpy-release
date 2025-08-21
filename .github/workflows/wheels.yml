@@ -155,7 +155,7 @@ jobs:
 
       - name: Build wheel
         env:
-          CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
+          # CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
           SRC: ${{ github.workspace }}/numpy-src
         run: |
           python -m pip install cibuildwheel==3.1.4
