@@ -61,7 +61,7 @@ jobs:
 #          - [windows-2022, win_amd64, ""]
 #          - [windows-2022, win32, ""]
 #          - [windows-11-arm, win_arm64, ""]
-        python: ["cp311", "cp312", "cp313", "cp313t", "cp314", "cp314t", "pp311"]
+        python: ["cp311"]#, "cp312", "cp313", "cp313t", "cp314", "cp314t", "pp311"]
         exclude:
           # Don't build PyPy 32-bit windows
           - buildplat: [windows-2022, win32, ""]
@@ -238,6 +238,7 @@ jobs:
 
       - name: Remove wasm wheels
         run: |
+          ls -al
           rm dist/*wasm*.whl
           ls -al dist
 
