@@ -238,8 +238,8 @@ jobs:
 
       - name: Remove wasm wheels
         run: |
-          ls -al
-          rm dist/*wasm*.whl
+          cd dist
+          rm *wasm*.whl
           ls -al dist
 
 #      - name: Publish
