@@ -240,7 +240,7 @@ jobs:
         run: |
           cd dist
           ls -al
-          rm *wasm*.whl
+          rm -r *wasm*
           ls -al dist
 
 #      - name: Publish
@@ -299,7 +299,9 @@ jobs:
 
       - name: Remove wasm wheels
         run: |
-          rm dist/*wasm*.whl
+          cd dist
+          ls -al
+          rm -r *wasm*
           ls -al dist
 
       - name: Publish
