@@ -49,19 +49,19 @@ jobs:
         # https://github.com/github/feedback/discussions/7835#discussioncomment-1769026
         buildplat:
           - [ubuntu-22.04, manylinux_x86_64, ""]
-#          - [ubuntu-22.04, musllinux_x86_64, ""]
-#          - [ubuntu-22.04-arm, manylinux_aarch64, ""]
-#          - [ubuntu-22.04-arm, musllinux_aarch64, ""]
-#          - [macos-13, macosx_x86_64, openblas]
-#
-#          # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
-#          - [macos-13, macosx_x86_64, accelerate]
-#          - [macos-14, macosx_arm64, openblas]
-#          - [macos-14, macosx_arm64, accelerate]
-#          - [windows-2022, win_amd64, ""]
-#          - [windows-2022, win32, ""]
-#          - [windows-11-arm, win_arm64, ""]
-        python: ["cp311"]#, "cp312", "cp313", "cp313t", "cp314", "cp314t", "pp311"]
+          - [ubuntu-22.04, musllinux_x86_64, ""]
+          - [ubuntu-22.04-arm, manylinux_aarch64, ""]
+          - [ubuntu-22.04-arm, musllinux_aarch64, ""]
+          - [macos-13, macosx_x86_64, openblas]
+
+          # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
+          - [macos-13, macosx_x86_64, accelerate]
+          - [macos-14, macosx_arm64, openblas]
+          - [macos-14, macosx_arm64, accelerate]
+          - [windows-2022, win_amd64, ""]
+          - [windows-2022, win32, ""]
+          - [windows-11-arm, win_arm64, ""]
+        python: ["cp311", "cp312", "cp313", "cp313t", "cp314", "cp314t", "pp311"]
         exclude:
           # Don't build PyPy 32-bit windows
           - buildplat: [windows-2022, win32, ""]
@@ -222,7 +222,7 @@ jobs:
 
   testpypi-publish:
     name: Publish release to TestPyPI
-#    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'testpypi'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'testpypi'
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     environment:
@@ -243,13 +243,13 @@ jobs:
           rm -r *wasm*
           ls -al
 
-#      - name: Publish
-#        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
-#        with:
-#          repository-url: https://test.pypi.org/legacy/
-#          skip-existing: true
-#          print-hash: true
-#          attestations: true
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+          print-hash: true
+          attestations: true
 
   check_version:
     name: Ensure commit is tag before upload to PyPi
