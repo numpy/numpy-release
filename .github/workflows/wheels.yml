@@ -201,6 +201,7 @@ jobs:
         with:
           repository: numpy/numpy
           submodules: true
+          ref: ${{ env.SOURCE_REF_TO_BUILD }}
           persist-credentials: false
 
       - name: Build sdist
