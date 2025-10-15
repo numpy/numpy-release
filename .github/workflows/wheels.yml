@@ -52,10 +52,10 @@ jobs:
           - [ubuntu-22.04, musllinux_x86_64, ""]
           - [ubuntu-22.04-arm, manylinux_aarch64, ""]
           - [ubuntu-22.04-arm, musllinux_aarch64, ""]
-          - [macos-13, macosx_x86_64, openblas]
+          - [macos-15-intel, macosx_x86_64, openblas]
 
           # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
-          - [macos-13, macosx_x86_64, accelerate]
+          - [macos-15-intel, macosx_x86_64, accelerate]
           - [macos-14, macosx_arm64, openblas]
           - [macos-14, macosx_arm64, accelerate]
           - [windows-2022, win_amd64, ""]
@@ -74,9 +74,9 @@ jobs:
             python: "pp311"
           - buildplat: [ ubuntu-22.04-arm, musllinux_aarch64, "" ]
             python: "pp311"
-          - buildplat: [ macos13, macosx_x86_64, openblas ]
+          - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
             python: "cp313t"
-          - buildplat: [ macos13, macosx_x86_64, openblas ]
+          - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
             python: "cp314t"
         include:
           - buildplat: [ ubuntu-22.04, pyodide_wasm32, "" ]
@@ -122,7 +122,7 @@ jobs:
           echo "CIBW_ENVIRONMENT_WINDOWS=PKG_CONFIG_PATH=$CIBW" >> $env:GITHUB_ENV
 
       - name: Setup macOS
-        if: matrix.buildplat[0] == 'macos-13' || matrix.buildplat[0] == 'macos-14'
+        if: startsWith(matrix.buildplat[0], 'macos')
         run: |
           # Needed due to https://github.com/actions/runner-images/issues/3371
           # Supported versions: https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md
@@ -133,10 +133,6 @@ jobs:
           if [[ ${{ matrix.buildplat[2] }} == 'accelerate' ]]; then
             # Builds with Accelerate only target macOS>=14.0
             echo "CIBW_ENVIRONMENT_MACOS=MACOSX_DEPLOYMENT_TARGET=14.0 INSTALL_OPENBLAS=false" >> "$GITHUB_ENV"
-
-            # the macos-13 image that's used for building the x86_64 wheel can't test
-            # a wheel with deployment target >= 14 without further work
-            echo "CIBW_TEST_SKIP=*-macosx_x86_64" >> "$GITHUB_ENV"
           else
             echo "CIBW_ENVIRONMENT_MACOS=PKG_CONFIG_PATH=$PWD/.openblas" >> "$GITHUB_ENV"
           fi
