@@ -43,7 +43,7 @@ if [[ "$INSTALL_OPENBLAS" = "true" ]] ; then
     echo pkgconf_path is $pkgconf_path, OPENBLAS is ${OPENBLAS}
     rm -rf $pkgconf_path
     mkdir -p $pkgconf_path
-    python -m pip install -r $PROJECT_DIR/requirements/openblas_requirements.txt
+    python -m pip install -r $PROJECT_DIR/numpy/requirements/ci_requirements.txt
     python -c "import scipy_${OPENBLAS}; print(scipy_${OPENBLAS}.get_pkg_config())" > $pkgconf_path/scipy-openblas.pc
 
     # Copy scipy-openblas DLL's to a fixed location so we can point delvewheel
