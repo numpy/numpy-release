@@ -1,2 +1,3 @@
-scipy-openblas32==0.3.30.0.1
-scipy-openblas64==0.3.30.0.1
+scipy-openblas32==0.3.30.0.7
+scipy-openblas64==0.3.30.0.7
+
