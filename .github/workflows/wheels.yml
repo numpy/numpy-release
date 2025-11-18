@@ -157,12 +157,13 @@ jobs:
           name: ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
           path: ./dist/*.whl
 
-      # We upload nightlies only on cron job runs, so it doesn't overlap with
-      # builds from which we publish to PyPI - we don't want these extra
-      # dependencies when building release artifacts.
+      # We upload nightlies only on (a) cron job runs, or (b) manual triggers
+      # on `main`, so uploads don't overlap with builds from which we publish
+      # to PyPI - we don't want these extra dependencies when building release
+      # artifacts.
       - name: install micromamba
         # win-arm64 is unsupported by micromamba at the moment
-        if: github.event_name == 'schedule' && matrix.buildplat[1] != 'win_arm64'
+        if: (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) && matrix.buildplat[1] != 'win_arm64'
         uses: mamba-org/setup-micromamba@b09ef9b599704322748535812ca03efb2625677b # v2.0.5
         with:
           # For installation of anaconda-client, required for upload to anaconda.org
@@ -172,7 +173,7 @@ jobs:
             anaconda-client
 
       - name: win-arm64 install anaconda client
-        if: github.event_name == 'schedule' && matrix.buildplat[1] == 'win_arm64'
+        if: (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) && matrix.buildplat[1] == 'win_arm64'
         run: |
           # Rust installation needed for rpds-py.
           Invoke-WebRequest https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe -UseBasicParsing -Outfile rustup-init.exe
@@ -181,7 +182,7 @@ jobs:
           pip install anaconda-client
 
       - name: Upload to anaconda.org
-        if: github.event_name == 'schedule' && github.repository == 'numpy/numpy-release'
+        if: (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) && github.repository == 'numpy/numpy-release'
         shell: bash -el {0}  # required for micromamba
         env:
           TOKEN: ${{ secrets.NUMPY_NIGHTLY_UPLOAD_TOKEN }}
