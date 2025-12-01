@@ -61,19 +61,8 @@ jobs:
           - [windows-2022, win_amd64, ""]
           - [windows-2022, win32, ""]
           - [windows-11-arm, win_arm64, ""]
-        python: ["cp311", "cp312", "cp313", "cp313t", "cp314", "cp314t", "pp311"]
+        python: ["cp312", "cp313", "cp313t", "cp314", "cp314t"]
         exclude:
-          # Don't build PyPy 32-bit windows
-          - buildplat: [windows-2022, win32, ""]
-            python: "pp311"
-          # Don't build PyPy arm64 windows
-          - buildplat: [windows-11-arm, win_arm64, ""]
-            python: "pp311"
-          # No PyPy on musllinux images
-          - buildplat: [ ubuntu-22.04, musllinux_x86_64, "" ]
-            python: "pp311"
-          - buildplat: [ ubuntu-22.04-arm, musllinux_aarch64, "" ]
-            python: "pp311"
           - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
             python: "cp313t"
           - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
