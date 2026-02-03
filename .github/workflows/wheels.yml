@@ -169,6 +169,8 @@ jobs:
           Invoke-WebRequest https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe -UseBasicParsing -Outfile rustup-init.exe
           .\rustup-init.exe -y
           $env:PATH="$env:PATH;$env:USERPROFILE\.cargo\bin"
+          # pinned because cryptography pulled win-arm64 wheels in 46.0.4
+          pip install cryptography==46.0.3
           pip install anaconda-client
 
       - name: Upload to anaconda.org
