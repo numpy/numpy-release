@@ -165,13 +165,7 @@ jobs:
       - name: win-arm64 install anaconda client
         if: (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) && matrix.buildplat[1] == 'win_arm64'
         run: |
-          # Rust installation needed for rpds-py.
-          Invoke-WebRequest https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe -UseBasicParsing -Outfile rustup-init.exe
-          .\rustup-init.exe -y
-          $env:PATH="$env:PATH;$env:USERPROFILE\.cargo\bin"
-          # pinned because cryptography pulled win-arm64 wheels in 46.0.4
-          pip install cryptography==46.0.3
-          pip install anaconda-client
+          pip install --only-binary :all: anaconda-client
 
       - name: Upload to anaconda.org
         if: (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) && github.repository == 'numpy/numpy-release'
