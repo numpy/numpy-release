@@ -108,7 +108,6 @@ jobs:
         env:
           GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
-          $CIBW = "${{ github.workspace }}/.openblas"
           $CIBW = "$env:GITHUB_WORKSPACE/.openblas"
           # pkgconfig needs a complete path, and not just "./openblas since the
           # build is run in a tmp dir (?)
