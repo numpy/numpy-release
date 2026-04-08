@@ -105,8 +105,10 @@ jobs:
 
       - name: pkg-config-for-win
         if: runner.os == 'windows'
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
-          $CIBW = "${{ github.workspace }}/.openblas"
+          $CIBW = "$env:GITHUB_WORKSPACE/.openblas"
           # pkgconfig needs a complete path, and not just "./openblas since the
           # build is run in a tmp dir (?)
           # It seems somewhere in the env passing, `\` is not
@@ -116,6 +118,8 @@ jobs:
 
       - name: Setup macOS
         if: startsWith(matrix.buildplat[0], 'macos')
+        env:
+          BLAS_BACKEND: ${{ matrix.buildplat[2] }}
         run: |
           # Needed due to https://github.com/actions/runner-images/issues/3371
           # Supported versions: https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md
@@ -123,7 +127,7 @@ jobs:
           echo "F77=gfortran-15" >> "$GITHUB_ENV"
           echo "F90=gfortran-15" >> "$GITHUB_ENV"
 
-          if [[ ${{ matrix.buildplat[2] }} == 'accelerate' ]]; then
+          if [[ "$BLAS_BACKEND" == 'accelerate' ]]; then
             # Builds with Accelerate only target macOS>=14.0
             echo "CIBW_ENVIRONMENT_MACOS=MACOSX_DEPLOYMENT_TARGET=14.0 INSTALL_OPENBLAS=false" >> "$GITHUB_ENV"
           else
