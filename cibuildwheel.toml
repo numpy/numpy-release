@@ -38,10 +38,9 @@ config-settings = {setup-args = ["--vsenv", "-Dallow-noblas=true"], build-dir="b
 repair-wheel-command = ""
 
 # armv7l is a 32-bit architecture; ILP64 (64-bit BLAS integers) is not supported.
-# Use standard LP64 OpenBLAS instead.
 [[tool.cibuildwheel.overrides]]
 select = ["*-manylinux_armv7l", "*-musllinux_armv7l"]
-config-settings = {setup-args = ["-Duse-ilp64=false", "-Dallow-noblas=false"], build-dir="build"}
+config-settings = {setup-args = ["-Duse-ilp64=false", "-Dallow-noblas=true"], build-dir="build"}
 
 [tool.cibuildwheel.pyodide]
 before-test = "pip install -r $SRC/requirements/emscripten_test_requirements.txt"
