@@ -16,8 +16,10 @@ build-dir = "build"
 [tool.cibuildwheel.linux]
 manylinux-x86_64-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
+manylinux-armv7l-image = "manylinux_2_31"
 musllinux-x86_64-image = "musllinux_1_2"
 musllinux-aarch64-image = "musllinux_1_2"
+musllinux-armv7l-image = "musllinux_1_2"
 
 [tool.cibuildwheel.linux.environment]
 # RUNNER_OS is a GitHub Actions specific env var; define it here so it's
@@ -34,6 +36,12 @@ repair-wheel-command = "bash -el ./tools/wheels/repair_windows.sh {wheel} {dest_
 select = ["*-win32"]
 config-settings = {setup-args = ["--vsenv", "-Dallow-noblas=true"], build-dir="build"}
 repair-wheel-command = ""
+
+# armv7l is a 32-bit architecture; ILP64 (64-bit BLAS integers) is not supported.
+# Use standard LP64 OpenBLAS instead.
+[[tool.cibuildwheel.overrides]]
+select = ["*-manylinux_armv7l", "*-musllinux_armv7l"]
+config-settings = {setup-args = ["-Duse-ilp64=false", "-Dallow-noblas=false"], build-dir="build"}
 
 [tool.cibuildwheel.pyodide]
 before-test = "pip install -r $SRC/requirements/emscripten_test_requirements.txt"
