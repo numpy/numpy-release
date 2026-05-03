@@ -53,6 +53,7 @@ jobs:
           - [ubuntu-22.04, musllinux_x86_64, ""]
           - [ubuntu-22.04-arm, manylinux_aarch64, ""]
           - [ubuntu-22.04-arm, musllinux_aarch64, ""]
+          - [ubuntu-latest, manylinux_riscv64, ""]
           - [macos-15-intel, macosx_x86_64, openblas]
 
           # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
@@ -67,6 +68,10 @@ jobs:
           - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
             python: "cp313t"
           - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
+            python: "cp314t"
+          - buildplat: [ ubuntu-latest, manylinux_riscv64, "" ]
+            python: "cp313t"
+          - buildplat: [ ubuntu-latest, manylinux_riscv64, "" ]
             python: "cp314t"
         include:
           - buildplat: [ ubuntu-22.04, pyodide_wasm32, "" ]
@@ -138,6 +143,16 @@ jobs:
         if: ${{ matrix.buildplat[1] == 'pyodide_wasm32' }}
         run: |
           echo "CIBW_PLATFORM=pyodide" >> "$GITHUB_ENV"
+
+      - name: Setup QEMU
+        if: ${{ matrix.buildplat[1] == 'manylinux_riscv64' }}
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+
+      - name: manylinux_riscv64 setup
+        if: ${{ matrix.buildplat[1] == 'manylinux_riscv64' }}
+        run: |
+          # Specify the architecture explicitly as we are using QEMU to cross-native-compile
+          echo "CIBW_ARCHS=riscv64" >> "$GITHUB_ENV"
 
       - name: Build wheels
         uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
