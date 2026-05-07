@@ -152,13 +152,22 @@ jobs:
           name: ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
           path: ./dist/*.whl
 
-      # We upload nightlies only on (a) cron job runs, or (b) manual triggers
-      # on `main`, so uploads don't overlap with builds from which we publish
-      # to PyPI - we don't want these extra dependencies when building release
-      # artifacts.
-      - name: install micromamba
-        # win-arm64 is unsupported by micromamba at the moment
-        if: (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) && matrix.buildplat[1] != 'win_arm64'
+
+# -------------------------------------------------------------------------------------
+  # Should we upload to nightly. We do this on a scheduled run, or a workflow dispatch with environment 'none'
+  nightly_upload:
+    runs-on: ubuntu-latest
+    if: github.repository == 'numpy/numpy-release' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'none'))
+    needs: [build_wheels]
+
+    steps:
+      - name: Download wheels
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Install micromamba
         uses: mamba-org/setup-micromamba@d7c9bd84e824b79d2af72a2d4196c7f4300d3476 # v3.0.0
         with:
           # For installation of anaconda-client, required for upload to anaconda.org
@@ -167,18 +176,13 @@ jobs:
           create-args: >-
             anaconda-client
 
-      - name: win-arm64 install anaconda client
-        if: (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) && matrix.buildplat[1] == 'win_arm64'
-        run: |
-          pip install --only-binary :all: anaconda-client
-
       - name: Upload to anaconda.org
-        if: (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) && github.repository == 'numpy/numpy-release'
         shell: bash -el {0}  # required for micromamba
         env:
           TOKEN: ${{ secrets.NUMPY_NIGHTLY_UPLOAD_TOKEN }}
         run: |
           anaconda -q -t ${TOKEN} upload --force -u scientific-python-nightly-wheels ./dist/*.whl
+
 
   build_sdist:
     name: Build sdist
