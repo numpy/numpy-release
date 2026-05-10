@@ -39,7 +39,7 @@ permissions:
 
 jobs:
   build_wheels:
-    if: github.repository == 'numpy/numpy-release'
+    if: github.repository == 'andyfaff/numpy-release'
     name: Build wheel ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
     runs-on: ${{ matrix.buildplat[0] }}
     strategy:
@@ -50,19 +50,19 @@ jobs:
         # https://github.com/github/feedback/discussions/7835#discussioncomment-1769026
         buildplat:
           - [ubuntu-22.04, manylinux_x86_64, ""]
-          - [ubuntu-22.04, musllinux_x86_64, ""]
-          - [ubuntu-22.04-arm, manylinux_aarch64, ""]
-          - [ubuntu-22.04-arm, musllinux_aarch64, ""]
-          - [macos-15-intel, macosx_x86_64, openblas]
-
-          # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
-          - [macos-15-intel, macosx_x86_64, accelerate]
-          - [macos-14, macosx_arm64, openblas]
-          - [macos-14, macosx_arm64, accelerate]
-          - [windows-2022, win_amd64, ""]
-          - [windows-2022, win32, ""]
-          - [windows-11-arm, win_arm64, ""]
-        python: ["cp312", "cp313", "cp314", "cp314t"]
+          #          - [ubuntu-22.04, musllinux_x86_64, ""]
+          #          - [ubuntu-22.04-arm, manylinux_aarch64, ""]
+          #          - [ubuntu-22.04-arm, musllinux_aarch64, ""]
+          #          - [macos-15-intel, macosx_x86_64, openblas]
+          #
+          #          # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
+          #          - [macos-15-intel, macosx_x86_64, accelerate]
+          #          - [macos-14, macosx_arm64, openblas]
+          #          - [macos-14, macosx_arm64, accelerate]
+          #          - [windows-2022, win_amd64, ""]
+          #          - [windows-2022, win32, ""]
+          #          - [windows-11-arm, win_arm64, ""]
+        python: ["cp315"]#, "cp313", "cp314", "cp314t", "cp312"]
         exclude:
           - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
             python: "cp314t"
