@@ -62,7 +62,7 @@ jobs:
           - [windows-2022, win_amd64, ""]
           - [windows-2022, win32, ""]
           - [windows-11-arm, win_arm64, ""]
-        python: ["cp312", "cp313", "cp314", "cp314t"]
+        python: ["cp312", "cp313", "cp314", "cp314t", "cp315", "cp315t"]
         exclude:
           - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
             python: "cp314t"
@@ -74,12 +74,12 @@ jobs:
 
     steps:
       - name: Checkout numpy-release
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
       - name: Checkout numpy
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: numpy/numpy
           ref: ${{ env.SOURCE_REF_TO_BUILD }}
@@ -138,7 +138,7 @@ jobs:
           echo "CIBW_PLATFORM=pyodide" >> "$GITHUB_ENV"
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
+        uses: pypa/cibuildwheel@f03ac7617d6cff873ccf24cc0d567ef5ba5a9e6d # v4.0.0
         env:
           CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
           SRC: ${{ github.workspace }}/numpy-src
@@ -189,7 +189,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout numpy
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: numpy/numpy
           submodules: true
@@ -253,7 +253,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout numpy
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           repository: numpy/numpy
           ref: ${{ env.SOURCE_REF_TO_BUILD }}
