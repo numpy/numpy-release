@@ -25,10 +25,15 @@ if [[ $FREE_THREADED_BUILD == "True" ]]; then
     fi
 fi
 
-# Run full tests with -n=auto. This makes pytest-xdist distribute tests across
-# the available N CPU cores. Also print the durations for the 10 slowest tests
-# to help with debugging slow or hanging tests
-python -c "import sys; import numpy; sys.exit(not numpy.test(label='full', extra_argv=['-n=auto', '--durations=10']))"
+if [[ $RUNNER_OS == "Windows" && $IS_32_BIT == true && $FREE_THREADED_BUILD == "True" ]] ; then
+  # Avoid OOM errors by turning off xdist and forcing mimalloc to return pages with no delay
+  MIMALLOC_PURGE_DELAY=0 python -c "import sys; import numpy; sys.exit(not numpy.test(label='full', extra_argv=['--durations=10']))"
+else
+  # Run full tests with -n=auto. This makes pytest-xdist distribute tests across
+  # the available N CPU cores. Also print the durations for the 10 slowest tests
+  # to help with debugging slow or hanging tests
+  python -c "import sys; import numpy; sys.exit(not numpy.test(label='full', extra_argv=['-n=auto', '--durations=10']))"
+fi
 
 # Check license file content
 python $PROJECT_DIR/tools/wheels/check_license.py
