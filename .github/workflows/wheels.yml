@@ -60,7 +60,6 @@ jobs:
           - [macos-14, macosx_arm64, openblas]
           - [macos-14, macosx_arm64, accelerate]
           - [windows-2022, win_amd64, ""]
-          - [windows-2022, win32, ""]
           - [windows-11-arm, win_arm64, ""]
         python: ["cp312", "cp313", "cp314", "cp314t", "cp315", "cp315t"]
         exclude:
@@ -69,8 +68,7 @@ jobs:
         include:
           - buildplat: [ ubuntu-22.04, pyodide_wasm32, "" ]
             python: "cp313"
-    env:
-      IS_32_BIT: ${{ matrix.buildplat[1] == 'win32' }}  # used in a cibw_*.sh script
+
 
     steps:
       - name: Checkout numpy-release
@@ -86,12 +84,6 @@ jobs:
           path: numpy-src
           submodules: true
           persist-credentials: false
-
-      - name: Setup MSVC (32-bit)
-        if: ${{ matrix.buildplat[1] == 'win32' }}
-        uses: bus1/cabuild/action/msdevshell@e22aba57d6e74891d059d66501b6b5aed8123c4d  # v1
-        with:
-          architecture: 'x86'
 
       - name: win_arm64 - set environment variables
         if: ${{ matrix.buildplat[1] == 'win_arm64' }}
