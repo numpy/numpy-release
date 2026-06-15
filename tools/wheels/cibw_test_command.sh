@@ -6,10 +6,6 @@ PROJECT_DIR="$1"
 
 python -c "import numpy; numpy.show_config()"
 
-if [[ $RUNNER_OS == "Windows" && $IS_32_BIT == true ]] ; then
-  # Avoid this in GHA: "ERROR: Found GNU link.exe instead of MSVC link.exe"
-  rm /c/Program\ Files/Git/usr/bin/link.EXE
-fi
 
 # Set available memory value to avoid OOM problems on aarch64 (see gh-22418)
 export NPY_AVAILABLE_MEM="4 GB"
