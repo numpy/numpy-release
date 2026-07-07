@@ -4,6 +4,6 @@ setuptools==80.9.0 ; python_version >= '3.12'
 hypothesis==6.104.1
 pytest==7.4.0
 meson==1.9.1
-ninja==1.11.1.4; sys_platform != "emscripten"
+ninja==1.13.0; sys_platform != "emscripten"
 pytest-xdist==3.8.0
 threadpoolctl==3.6.0
