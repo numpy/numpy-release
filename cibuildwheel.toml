@@ -36,7 +36,7 @@ config-settings = {setup-args = ["--vsenv", "-Dallow-noblas=true"], build-dir="b
 repair-wheel-command = ""
 
 [tool.cibuildwheel.pyodide]
-before-test = "pip install -r $SRC/requirements/emscripten_test_requirements.txt"
+before-test = "pip install -r requirements/minimal_test_requirements.txt"
 # Pyodide ensures that the wheels are already repaired by auditwheel-emscripten
 repair-wheel-command = ""
 test-command = "python -m pytest --pyargs numpy -m 'not slow'"
