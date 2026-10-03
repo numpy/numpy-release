@@ -53,8 +53,8 @@ it's recommended to only select the platform(s) you're interested in like this:
 -
 -          # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
 -          - [macos-13, macosx_x86_64, accelerate]
--          - [macos-14, macosx_arm64, openblas]
--          - [macos-14, macosx_arm64, accelerate]
+-          - [macos-15, macosx_arm64, openblas]
+-          - [macos-15, macosx_arm64, accelerate]
 -          - [windows-2022, win_amd64, ""]
 -          - [windows-2022, win32, ""]
 -          - [windows-11-arm, win_arm64, ""]
