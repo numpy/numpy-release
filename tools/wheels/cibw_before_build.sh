@@ -36,6 +36,11 @@ if [[ "$INSTALL_OPENBLAS" = "true" ]] ; then
         OPENBLAS=openblas32
     fi
 
+    # install OpenBLAS
+    pushd $NUMPY_SRC_DIR
+    python -m pip install --group $OPENBLAS
+    popd
+
     # The PKG_CONFIG_PATH environment variable will be pointed to this path in
     # cibuildwheel.toml and .github/workflows/wheels.yml. Note that
     # `pkgconf_path` here is only a bash variable local to this file.
@@ -43,7 +48,6 @@ if [[ "$INSTALL_OPENBLAS" = "true" ]] ; then
     echo pkgconf_path is $pkgconf_path, OPENBLAS is ${OPENBLAS}
     rm -rf $pkgconf_path
     mkdir -p $pkgconf_path
-    python -m pip install -r $PROJECT_DIR/requirements/openblas_requirements.txt
     python -c "import scipy_${OPENBLAS}; print(scipy_${OPENBLAS}.get_pkg_config())" > $pkgconf_path/scipy-openblas.pc
 
     # Copy scipy-openblas DLL's to a fixed location so we can point delvewheel
