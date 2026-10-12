@@ -5,6 +5,9 @@ env:
   # to build wheels. This is normally set to `main` in the main branch of this
   # repo, and to a tag name (e.g., `v2.3.2`) on a release branch.
   SOURCE_REF_TO_BUILD: main
+  UV_VERSION: "0.12.5"
+  UV_HASH: "68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2"
+
 
 on:
   schedule:
@@ -38,10 +41,59 @@ permissions:
   contents: read # to fetch code (actions/checkout)
 
 jobs:
+  check_lock:
+    name: Check uv.lock file
+    runs-on: ubuntu-latest
+    if: (github.repository == 'numpy/numpy-release' || github.repository == '')
+
+    steps:
+      - name: Checkout numpy-release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout numpy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: numpy/numpy
+          ref: ${{ env.SOURCE_REF_TO_BUILD }}
+          path: numpy-src
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          # unlike build_wheels, this job is Linux-only, so we can pin the download too
+          checksum: ${{ env.UV_HASH }}
+          enable-cache: false
+
+      - name: Check lock file
+        run: |
+          # pyproject.toml holds the dependency groups the builds install, copied out
+          # of numpy's; regenerating it here is what catches numpy changing them.
+          # See CONTRIBUTING.md for how to regenerate these files. The cooldown the
+          # lock was generated with is recorded in it, and has to be repeated here.
+          python3 tools/sync_dependency_groups.py numpy-src | diff -u pyproject.toml -
+          uv lock --check --exclude-newer "7 days"
+
+      - name: Record the pins that will be used
+        run: |
+          # the packages that actually get installed, for review of a lock file bump
+          {
+            echo '## Build and test dependencies for this run'
+            echo '```'
+            uv export --frozen --no-hashes --no-emit-project --no-default-groups \
+              --group build --group openblas32 --group openblas64 --group test
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+
   build_wheels:
     if: github.repository == 'numpy/numpy-release'
-    name: Build wheel ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
+    name: BLD > ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
     runs-on: ${{ matrix.buildplat[0] }}
+    needs: [check_lock]
     strategy:
       # Ensure that a wheel builder finishes even if another fails
       fail-fast: false
@@ -49,10 +101,10 @@ jobs:
         # Github Actions doesn't support pairing matrix values together, let's improvise
         # https://github.com/github/feedback/discussions/7835#discussioncomment-1769026
         buildplat:
-          - [ubuntu-22.04, manylinux_x86_64, ""]
-          - [ubuntu-22.04, musllinux_x86_64, ""]
-          - [ubuntu-22.04-arm, manylinux_aarch64, ""]
-          - [ubuntu-22.04-arm, musllinux_aarch64, ""]
+          - [ubuntu-24.04, manylinux_x86_64, ""]
+          - [ubuntu-24.04, musllinux_x86_64, ""]
+          - [ubuntu-24.04-arm, manylinux_aarch64, ""]
+          - [ubuntu-24.04-arm, musllinux_aarch64, ""]
           - [macos-15-intel, macosx_x86_64, openblas]
 
           # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
@@ -67,7 +119,7 @@ jobs:
             python: "cp314t"
         include:
           - buildplat: [ ubuntu-22.04, pyodide_wasm32, "" ]
-            python: "cp313"
+            python: "cp314"
 
 
     steps:
@@ -85,19 +137,35 @@ jobs:
           submodules: true
           persist-credentials: false
 
+      # the version of python we'll run cibuildwheel with
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: 3.13
+
+      # Used in cibw_before_build to install pinned build dependencies
+      # Note that cibuildwheel provides it in the Linux images, so this install
+      # is only useful on macOS/windows
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          # can't use checksum here, because there are different packages
+          # for different OS
+          version: ${{ env.UV_VERSION }}
+          enable-cache: false
+
       - name: win_arm64 - set environment variables
         if: ${{ matrix.buildplat[1] == 'win_arm64' }}
         run: |
-            echo "C:\Program Files\LLVM\bin" >> $env:GIHUB_PATH
             echo "CC=clang-cl" >> $env:GITHUB_ENV
             echo "CXX=clang-cl" >> $env:GITHUB_ENV
             echo "FC=flang" >> $env:GITHUB_ENV
 
-      - name: pkg-config-for-win
+      - name: Windows setup
         if: runner.os == 'windows'
         env:
           GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
+          rm -fo c:/Strawberry/c/lib/pkgconfig/*.pc
           $CIBW = "$env:GITHUB_WORKSPACE/.openblas"
           # pkgconfig needs a complete path, and not just "./openblas since the
           # build is run in a tmp dir (?)
@@ -112,7 +180,7 @@ jobs:
           BLAS_BACKEND: ${{ matrix.buildplat[2] }}
         run: |
           # Needed due to https://github.com/actions/runner-images/issues/3371
-          # Supported versions: https://github.com/actions/runner-images/blob/main/images/macos/macos-14-arm64-Readme.md
+          # Supported versions: https://github.com/actions/runner-images/blob/main/images/macos/macos-15-arm64-Readme.md
           echo "FC=gfortran-15" >> "$GITHUB_ENV"
           echo "F77=gfortran-15" >> "$GITHUB_ENV"
           echo "F90=gfortran-15" >> "$GITHUB_ENV"
@@ -128,6 +196,7 @@ jobs:
         if: ${{ matrix.buildplat[1] == 'pyodide_wasm32' }}
         run: |
           echo "CIBW_PLATFORM=pyodide" >> "$GITHUB_ENV"
+          echo "CIBW_ENVIRONMENT_PYODIDE=INSTALL_OPENBLAS=false" >> "$GITHUB_ENV"
 
       - name: Build wheels
         uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
@@ -159,26 +228,17 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Install micromamba
-        uses: mamba-org/setup-micromamba@ce51e99f4bb8a82ab7158c4dc59ef4634c59c4f9 # v3.1.0
+      - name: Upload nightly wheel
+        uses: scientific-python/upload-nightly-action@e76cfec8a4611fd02808a801b0ff5a7d7c1b2d99 # 0.6.4
         with:
-          # For installation of anaconda-client, required for upload to anaconda.org
-          init-shell: bash
-          environment-name: upload-env
-          create-args: >-
-            anaconda-client
+          anaconda_nightly_upload_token: ${{ secrets.NUMPY_NIGHTLY_UPLOAD_TOKEN }}
+          artifacts_path: dist/
 
-      - name: Upload to anaconda.org
-        shell: bash -el {0}  # required for micromamba
-        env:
-          TOKEN: ${{ secrets.NUMPY_NIGHTLY_UPLOAD_TOKEN }}
-        run: |
-          anaconda -q -t ${TOKEN} upload --force -u scientific-python-nightly-wheels ./dist/*.whl
-
-
+# -------------------------------------------------------------------------------------
   build_sdist:
     name: Build sdist
     runs-on: ubuntu-latest
+    if: github.repository == 'numpy/numpy-release'
     steps:
       - name: Checkout numpy
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -205,6 +265,7 @@ jobs:
           name: sdist
           path: ./dist/*
 
+# -------------------------------------------------------------------------------------
   testpypi-publish:
     name: Publish release to TestPyPI
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'testpypi'
@@ -237,6 +298,7 @@ jobs:
           print-hash: true
           attestations: true
 
+# -------------------------------------------------------------------------------------
   check_version:
     name: Ensure commit is tag before upload to PyPi
 

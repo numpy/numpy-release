@@ -6,6 +6,63 @@ fixes are very welcome, however CI jobs will not run for anyone who doesn't
 have commit access.
 
 
+## Updating the pinned dependencies
+
+Every build and test dependency is pinned, with hashes, in `uv.lock`. The dependency
+groups it pins live in the committed `pyproject.toml`, which is *generated* from the
+`build`, `test`, `openblas32`, `openblas64`, `test-core`, `hypothesis` groups from
+the `pyproject.toml` of`numpy/numpy`. It needs to be consistent with the `numpy/numpy`
+commit this  branch builds (`SOURCE_REF_TO_BUILD` in`.github/workflows/wheels.yml`). The
+build scripts install from the lock file with `uv export --require-hashes`.
+
+Locking numpy's own `pyproject.toml` would work too, but it would pin all of its
+dependency groups - `doc`, `dev`, `typecheck` and the rest - which is about 180 extra
+packages that are never installed here, and a lock file six times the size.
+
+Because `pyproject.toml` is a copy, it goes stale whenever numpy changes those three
+groups. The `check_lock` CI job uses `tools/sync_dependency_groups.py` to
+generate a `pyproject.toml` from `numpy/numpy`, diffs it against the committed one (in
+this repository), and then runs `uv lock --check`, before any wheels are built.
+
+To regenerate both `uv.lock` and `pyproject.toml`:
+
+```bash
+tools/update_lock.sh              # sync to numpy's dependency groups
+tools/update_lock.sh --upgrade    # ... and also bump every pin to the latest release
+```
+
+This expects a `numpy/numpy` checkout at `../numpy`, at the commit named by
+`SOURCE_REF_TO_BUILD`; set `$NUMPY_SRC` if yours lives somewhere else. Use a `uv` at
+least as new as CI's `UV_VERSION` - older ones write a different lock file format.
+
+Releases published within the last 7 days are ignored, so that a version published in the
+last few days can't end up in a build. uv writes that window into the lock file and
+`uv lock --check` only passes when given the *same* value, so it is hardcoded in two
+places that have to agree: the `check_lock` job in `wheels.yml`, and
+`tools/update_lock.sh`. Change one and CI will reject the lock file you generate.
+
+## Reviewing a lock file change
+
+Check `pyproject.toml` first: it determines everything else, and a change to it should
+correspond to a change in numpy's dependency groups. `check_lock` proves that it does.
+
+For `uv.lock` itself, worth checking on top of the version changes:
+
+- That the diff contains no `source = { registry = ... }` pointing anywhere other than
+  `https://pypi.org/simple`, and no `source = { url = ... }` or `{ git = ... }` entries.
+- That `requires-python` and the `[options]` block at the top of the file are unchanged;
+  a dropped `exclude-newer-span` means the cooldown was silently skipped.
+- That the number of packages hasn't grown unexpectedly. The `check_lock` job writes the
+  packages that get installed to its job summary on every run, so a PR touching the lock
+  file can be reviewed by comparing its summary against the one from the most recent run
+  on `main`. To produce that list locally:
+
+  ```bash
+  uv export --frozen --no-hashes --no-emit-project --no-default-groups \
+      --group build --group openblas32 --group test-core --group test --group openblas64
+  ```
+
+
 ## Running CI jobs on your own fork
 
 To get CI to run on your own fork for changes in a branch named
