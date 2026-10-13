@@ -57,7 +57,7 @@ if [[ "$INSTALL_OPENBLAS" = "true" ]] ; then
     mkdir -p $pkgconf_path
     python -c "import scipy_${OPENBLAS}; print(scipy_${OPENBLAS}.get_pkg_config())" > $pkgconf_path/scipy-openblas.pc
 
-     # Copy scipy-openblas DLL's to a fixed location so we can point delvewheel
+    # Copy scipy-openblas DLL's to a fixed location so we can point delvewheel
     # at it in `repair_windows.sh` (needed only on Windows because of the lack
     # of RPATH support).
     if [[ $RUNNER_OS == "Windows" ]]; then
