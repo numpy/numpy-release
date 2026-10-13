@@ -1,6 +1,6 @@
 """Generate this repository's pyproject.toml from numpy's dependency groups.
 
-    python sync_dependency_groups.py <scipy checkout> > pyproject.toml
+    python sync_dependency_groups.py <numpy checkout> > pyproject.toml
 
 The wheel and sdist builds only ever install four of numpy's dependency groups, but a
 `uv.lock` covers a whole project - locking numpy's own pyproject.toml pulls in `doc`,
