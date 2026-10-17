@@ -34,11 +34,11 @@ test = [
     "hypothesis==6.168.3",
 ]
 openblas32 = [
-    "scipy-openblas32==0.3.34.106.0",
+    "scipy-openblas32==0.3.34.237.2",
     "pkgconf==2.5.1.post1; sys_platform == \"win32\"",
 ]
 openblas64 = [
-    "scipy-openblas64==0.3.34.106.0",
+    "scipy-openblas64==0.3.34.237.2",
     "pkgconf==2.5.1.post1; sys_platform == \"win32\"",
 ]
 test-core = [
