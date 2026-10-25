@@ -196,8 +196,15 @@ jobs:
           ref: ${{ env.SOURCE_REF_TO_BUILD }}
           persist-credentials: false
 
+      - name: Checkout numpy-release
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: numpy-release
+          persist-credentials: false
+
       - name: Build sdist
         run: |
+          bash numpy-release/tools/wheels/bootstrap-pip.sh
           python -m pip install -U pip build
           python -m build --sdist -Csetup-args=-Dallow-noblas=true
 
