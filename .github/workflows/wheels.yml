@@ -117,6 +117,12 @@ jobs:
         exclude:
           - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
             python: "cp314t"
+          - buildplat: [ubuntu-24.04, musllinux_x86_64, ""]
+            python: "pp312"
+          - buildplat: [ubuntu-24.04-arm, musllinux_x86_64, ""]
+            python: "pp312"
+          - buildplat: [windows-11-arm, win_arm64, ""]
+            python: "pp312"
         include:
           - buildplat: [ ubuntu-22.04, pyodide_wasm32, "" ]
             python: "cp314"

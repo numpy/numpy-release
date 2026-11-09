@@ -13,7 +13,7 @@ build-frontend = { name = "build", args = ["--no-isolation"] }
 before-build = "bash {project}/tools/wheels/cibw_before_build.sh {project}"
 before-test = "bash {project}/tools/wheels/cibw_before_test.sh {project}"
 test-command = "bash {project}/tools/wheels/cibw_test_command.sh {project}"
-enable = ["cpython-prerelease"]
+enable = ["cpython-prerelease", "pypy"]
 
 # The build will use openblas64 everywhere, except on arm64 macOS >=14.0 (uses Accelerate)
 [tool.cibuildwheel.config-settings]
