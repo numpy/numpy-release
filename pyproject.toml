@@ -31,7 +31,7 @@ test = [
     "charset-normalizer",
     "pytest-cov==7.1.0",
     "numpy_quaddtype; python_version < \"3.15\" and sys_platform == \"darwin\"",
-    "hypothesis==6.168.3",
+    "hypothesis==6.170.14",
 ]
 openblas32 = [
     "scipy-openblas32==0.3.34.237.2",
@@ -48,5 +48,5 @@ test-core = [
     "tzdata",
 ]
 hypothesis = [
-    "hypothesis==6.168.3",
+    "hypothesis==6.170.14",
 ]
