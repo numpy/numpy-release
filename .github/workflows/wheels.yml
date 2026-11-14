@@ -103,24 +103,22 @@ jobs:
         # https://github.com/github/feedback/discussions/7835#discussioncomment-1769026
         buildplat:
           - [ubuntu-24.04, manylinux_x86_64, ""]
-          # FIXME
-          # - [ubuntu-24.04, musllinux_x86_64, ""]
-          # - [ubuntu-24.04-arm, manylinux_aarch64, ""]
-          # - [ubuntu-24.04-arm, musllinux_aarch64, ""]
-          # - [macos-15-intel, macosx_x86_64, openblas]
+          - [ubuntu-24.04, musllinux_x86_64, ""]
+          - [ubuntu-24.04-arm, manylinux_aarch64, ""]
+          - [ubuntu-24.04-arm, musllinux_aarch64, ""]
+          - [macos-15-intel, macosx_x86_64, openblas]
 
-          # # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
-          # - [macos-15-intel, macosx_x86_64, accelerate]
-          # - [macos-15, macosx_arm64, openblas]
+          # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
+          - [macos-15-intel, macosx_x86_64, accelerate]
+          - [macos-15, macosx_arm64, openblas]
           - [macos-15, macosx_arm64, accelerate]
           - [windows-2022, win_amd64, ""]
-          # FIXME
-          # - [windows-11-arm, win_arm64, ""]
+          - [windows-11-arm, win_arm64, ""]
           - [ubuntu-24.04, android_arm64_v8a]
           - [ubuntu-24.04, android_x86_64]
           - [macos-26, ios_arm64_iphoneos]
           - [macos-26, ios_arm64_iphonesimulator]
-        python: ["cp313"]  # FIXME ["cp312", "cp313", "cp314", "cp314t", "cp315", "cp315t"]
+        python: ["cp312", "cp313", "cp314", "cp314t", "cp315", "cp315t"]
         exclude:
           - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
             python: "cp314t"
