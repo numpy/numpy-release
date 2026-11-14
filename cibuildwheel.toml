@@ -21,8 +21,11 @@ setup-args = ["-Duse-ilp64=true", "-Dallow-noblas=false"]
 build-dir = "build"
 
 [tool.cibuildwheel.ios]
-before-build = []
-xbuild-tools = ["ninja"]
+# ACCELERATE_NEW_LAPACK with ILP64 requires a higher iOS version than cibuildwheel's
+# default.
+environment.IPHONEOS_DEPLOYMENT_TARGET = "17.0"
+environment.INSTALL_OPENBLAS = "false"
+xbuild-tools = ["ninja", "uv"]
 
 [tool.cibuildwheel.linux]
 manylinux-x86_64-image = "manylinux_2_28"
@@ -41,6 +44,7 @@ repair-wheel-command = "bash -el ./tools/wheels/repair_windows.sh {wheel} {dest_
 
 [[tool.cibuildwheel.overrides]]
 select = ["*-android_*", "*-*linux_*"]
+inherit.environment = "append"
 environment.PKG_CONFIG_PATH = "$(pwd)/.openblas"
 
 [[tool.cibuildwheel.overrides]]

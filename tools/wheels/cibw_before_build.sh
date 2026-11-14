@@ -46,12 +46,25 @@ function install_group {
         uv pip install --python "$PYTHON_EXE" --no-deps --require-hashes -r -
 }
 
-# On Android we need to temporarily clear CIBW_HOST_TRIPLET in order to install build
-# tools for the build platform, not the host platform.
-CIBW_HOST_TRIPLET= install_group build
+# When cross-compiling, we need to temporarily modify the virtual environment in order
+# to install for the build platform, not the host platform.
+site_packages=$(python3 -c '
+import sys
+print(next(entry for entry in sys.path if entry.endswith("site-packages")))
+')
+cross_pth="$site_packages/_cross_venv.pth"
+if [ -e "$cross_pth" ]; then
+    mv "$cross_pth" "$cross_pth.disabled"
+fi
+
+install_group build
+
+if [ -e "$cross_pth.disabled" ]; then
+    mv "$cross_pth.disabled" "$cross_pth"
+fi
 
 # uv caches each virtual environment's platform, so we need to clear that before
-# installing OpenBLAS for the host system.
+# installing OpenBLAS for the host platform.
 uv cache clear
 if [ -n "$OPENBLAS" ]; then
     install_group $OPENBLAS

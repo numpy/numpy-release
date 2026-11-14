@@ -112,14 +112,15 @@ jobs:
           # # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
           # - [macos-15-intel, macosx_x86_64, accelerate]
           # - [macos-15, macosx_arm64, openblas]
-          # - [macos-15, macosx_arm64, accelerate]
-          # - [windows-2022, win_amd64, ""]
+          - [macos-15, macosx_arm64, accelerate]
+          - [windows-2022, win_amd64, ""]
+          # FIXME
           # - [windows-11-arm, win_arm64, ""]
           - [ubuntu-24.04, android_arm64_v8a]
           - [ubuntu-24.04, android_x86_64]
           - [macos-26, ios_arm64_iphoneos]
           - [macos-26, ios_arm64_iphonesimulator]
-        python: ["cp312", "cp313", "cp314", "cp314t", "cp315", "cp315t"]
+        python: ["cp313"]  # FIXME ["cp312", "cp313", "cp314", "cp314t", "cp315", "cp315t"]
         exclude:
           - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
             python: "cp314t"
@@ -210,13 +211,6 @@ jobs:
           else
             echo "CIBW_ENVIRONMENT_MACOS=PKG_CONFIG_PATH=$PWD/.openblas" >> "$GITHUB_ENV"
           fi
-
-      - name: Setup iOS
-        if: startsWith(matrix.buildplat[1], 'ios_')
-        run: |
-          # ACCELERATE_NEW_LAPACK with ILP64 requires a higher iOS version than
-          # cibuildwheel's default.
-          echo "CIBW_ENVIRONMENT_IOS=IPHONEOS_DEPLOYMENT_TARGET=17.0" >> "$GITHUB_ENV"
 
       - name: Pyodide setup
         if: ${{ matrix.buildplat[1] == 'pyodide_wasm32' }}
