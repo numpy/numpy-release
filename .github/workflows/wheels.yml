@@ -45,7 +45,7 @@ jobs:
   check_lock:
     name: Check uv.lock file
     runs-on: ubuntu-latest
-    if: (github.repository == 'numpy/numpy-release' || github.repository == '')
+    # FIXME if: (github.repository == 'numpy/numpy-release' || github.repository == '')
 
     steps:
       - name: Checkout numpy-release
@@ -91,7 +91,7 @@ jobs:
 
 
   build_wheels:
-    if: github.repository == 'numpy/numpy-release'
+    # FIXME if: github.repository == 'numpy/numpy-release'
     name: ${{ matrix.python }}-${{ matrix.buildplat[1] }} ${{ matrix.buildplat[2] }}
     runs-on: ${{ matrix.buildplat[0] }}
     needs: [check_lock]
