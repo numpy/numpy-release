@@ -1,8 +1,7 @@
 set -xe
 
-PROJECT_DIR="${1:-$PWD}"
-NUMPY_SRC_DIR="${1:-$PWD}/numpy-src"
-
+PROJECT_DIR="${1:?}"
+NUMPY_SRC_DIR="${2:?}"
 
 # Update license
 echo "" >> $NUMPY_SRC_DIR/LICENSE.txt
@@ -24,7 +23,6 @@ if [[ $(python -c"import sys; print(sys.maxsize)") < $(python -c"import sys; pri
     export INSTALL_OPENBLAS=false
 fi
 
-OPENBLAS_GRP=""
 # Install OpenBLAS from scipy-openblas32|64
 if [[ "$INSTALL_OPENBLAS" = "true" ]] ; then
     # By default, use scipy-openblas64
@@ -34,7 +32,6 @@ if [[ "$INSTALL_OPENBLAS" = "true" ]] ; then
     if [[ $RUNNER_ARCH == "ARM64" && $RUNNER_OS == "Windows" ]] ; then
         OPENBLAS=openblas32
     fi
-    OPENBLAS_GRP="--group $OPENBLAS"
 fi
 
 # install build dependencies via uv
@@ -43,8 +40,22 @@ uv --version
 # the lock file lives in this repo, not in the numpy checkout; the check_lock job in
 # wheels.yml verifies it still matches numpy's dependency groups
 PYTHON_EXE="$(python -c 'import sys; print(sys.executable)')"
-uv export --project "$PROJECT_DIR" --no-default-groups --group build --no-emit-project $OPENBLAS_GRP --frozen | \
-    uv pip install --python "$PYTHON_EXE" --no-deps --require-hashes -r -
+
+function install_group {
+    uv export --project "$PROJECT_DIR" --no-default-groups --group ${1:?} --no-emit-project --frozen | \
+        uv pip install --python "$PYTHON_EXE" --no-deps --require-hashes -r -
+}
+
+# On Android we need to temporarily clear CIBW_HOST_TRIPLET in order to install build
+# tools for the build platform, not the host platform.
+CIBW_HOST_TRIPLET= install_group build
+
+# uv caches each virtual environment's platform, so we need to clear that before
+# installing OpenBLAS for the host system.
+uv cache clear
+if [ -n "$OPENBLAS" ]; then
+    install_group $OPENBLAS
+fi
 
 # Configure the pkg-config file for OpenBLAS
 if [[ "$INSTALL_OPENBLAS" = "true" ]] ; then
