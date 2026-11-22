@@ -237,7 +237,7 @@ jobs:
 # -------------------------------------------------------------------------------------
   build_sdist:
     name: Build sdist
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.repository == 'numpy/numpy-release'
     needs: [ check_lock ]
     steps:
