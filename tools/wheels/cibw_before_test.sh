@@ -9,7 +9,11 @@ PYTHON_EXE="$(python -c 'import sys; print(sys.executable)')"
 PLATFORM=$(python -c "import sys;print(sys.platform)")
 
 if [[ "$PLATFORM" = "emscripten" ]] ; then
-  TEST_GRP="--only-group test-core --only-group hypothesis"
+  TEST_GRP="--only-group test-core"
+  # no hypothesis wheels for pyemscripten_2026_5 (cp315-pyodide_wasm32) yet
+  if [[ "$(python -c 'import sys; print(sys.version_info[:2] == (3, 14))')" = "True" ]] ; then
+    TEST_GRP="$TEST_GRP --only-group hypothesis"
+  fi
 else
   TEST_GRP="--only-group test"
 fi
