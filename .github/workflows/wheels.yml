@@ -118,8 +118,10 @@ jobs:
           - buildplat: [ macos-15-intel, macosx_x86_64, openblas ]
             python: "cp314t"
         include:
-          - buildplat: [ ubuntu-22.04, pyodide_wasm32, "" ]
+          - buildplat: [ ubuntu-24.04, pyodide_wasm32, "" ] # pyemscripten_2026_0
             python: "cp314"
+          - buildplat: [ ubuntu-24.04, pyodide_wasm32, "" ] # pyemscripten_2026_5
+            python: "cp315"
 
 
     steps:
