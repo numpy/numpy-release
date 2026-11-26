@@ -1,8 +1,7 @@
 set -xe
 
-PROJECT_DIR="${1:-$PWD}"
-NUMPY_SRC_DIR="${1:-$PWD}/numpy-src"
-
+PROJECT_DIR="${1:?}"
+NUMPY_SRC_DIR="${2:?}"
 
 # Update license
 echo "" >> $NUMPY_SRC_DIR/LICENSE.txt
@@ -24,7 +23,6 @@ if [[ $(python -c"import sys; print(sys.maxsize)") < $(python -c"import sys; pri
     export INSTALL_OPENBLAS=false
 fi
 
-OPENBLAS_GRP=""
 # Install OpenBLAS from scipy-openblas32|64
 if [[ "$INSTALL_OPENBLAS" = "true" ]] ; then
     # By default, use scipy-openblas64
@@ -34,7 +32,6 @@ if [[ "$INSTALL_OPENBLAS" = "true" ]] ; then
     if [[ $RUNNER_ARCH == "ARM64" && $RUNNER_OS == "Windows" ]] ; then
         OPENBLAS=openblas32
     fi
-    OPENBLAS_GRP="--group $OPENBLAS"
 fi
 
 # install build dependencies via uv
@@ -43,8 +40,35 @@ uv --version
 # the lock file lives in this repo, not in the numpy checkout; the check_lock job in
 # wheels.yml verifies it still matches numpy's dependency groups
 PYTHON_EXE="$(python -c 'import sys; print(sys.executable)')"
-uv export --project "$PROJECT_DIR" --no-default-groups --group build --no-emit-project $OPENBLAS_GRP --frozen | \
-    uv pip install --python "$PYTHON_EXE" --no-deps --require-hashes -r -
+
+function install_group {
+    uv export --project "$PROJECT_DIR" --no-default-groups --group ${1:?} --no-emit-project --frozen | \
+        uv pip install --python "$PYTHON_EXE" --no-deps --require-hashes -r -
+}
+
+# When cross-compiling, we need to temporarily modify the virtual environment in order
+# to install for the build platform, not the host platform.
+site_packages=$(python3 -c '
+import sys
+print(next(entry for entry in sys.path if entry.endswith("site-packages")))
+')
+cross_pth="$site_packages/_cross_venv.pth"
+if [ -e "$cross_pth" ]; then
+    mv "$cross_pth" "$cross_pth.disabled"
+fi
+
+install_group build
+
+if [ -e "$cross_pth.disabled" ]; then
+    mv "$cross_pth.disabled" "$cross_pth"
+fi
+
+# uv caches each virtual environment's platform, so we need to clear that before
+# installing OpenBLAS for the host platform.
+uv cache clear
+if [ -n "$OPENBLAS" ]; then
+    install_group $OPENBLAS
+fi
 
 # Configure the pkg-config file for OpenBLAS
 if [[ "$INSTALL_OPENBLAS" = "true" ]] ; then
