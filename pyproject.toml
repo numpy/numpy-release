@@ -47,6 +47,3 @@ test-core = [
     "pytest-timeout",
     "tzdata",
 ]
-hypothesis = [
-    "hypothesis==6.170.14",
-]
